@@ -14,8 +14,9 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
      * @return List of User objects
      * @throws DaoException
      */
+    //Raphel
     @Override
-    public List<Game> findAllGames() throws DaoException
+    public List<Game> displayAllGames() throws DaoException
     {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -33,6 +34,11 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
 
             //Using a PreparedStatement to execute SQL...
             resultSet = preparedStatement.executeQuery();
+            // Print table headers
+            System.out.println("\n=============================================================================================================================");
+            System.out.printf("%-2s %-8s %-30s %-20s %-15s %-10s %-10s %-10s %-10s %-2s%n", "=","GameID", "Name", "Genre", "ReleaseDate", "Rating", "Price", "IsLimited", "StockLevel", "=");
+            System.out.println("=============================================================================================================================");
+            // Print table data
             while (resultSet.next())
             {
                 int gameId = resultSet.getInt("gameID");
@@ -45,10 +51,14 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
                 int stockLevel = resultSet.getInt("StockLevel");
                 Game g = new Game(gameId, name, genre, releaseDate.toLocalDate(), rating,price,isLimited,stockLevel);
                 gamessList.add(g);
+                System.out.printf("%-2s %-8d %-30s %-20s %-15s %-10.1f %-10.2f %-10s %-9d  %-1s%n","=", gameId, name, genre, releaseDate.toLocalDate(), rating, price, isLimited, stockLevel, "=");
+                System.out.println("-----------------------------------------------------------------------------------------------------------------------------");
             }
+            System.out.println("=============================================================================================================================\n");
+
         } catch (SQLException e)
         {
-            throw new DaoException("findAllUseresultSet() " + e.getMessage());
+            throw new DaoException("displayAllGames() " + e.getMessage());
         } finally
         {
             try

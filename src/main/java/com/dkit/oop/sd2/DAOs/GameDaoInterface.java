@@ -6,7 +6,8 @@ import java.util.List;
 
 public interface GameDaoInterface
 {
-    public List<Game> findAllGames() throws DaoException;
+    //Raphael
+    public List<Game> displayAllGames() throws DaoException;
 
 
 }
