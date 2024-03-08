@@ -14,7 +14,7 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
      * @return List of User objects
      * @throws DaoException
      */
-    //Raphel
+    //Raphael
     @Override
     public List<Game> displayAllGames() throws DaoException
     {
@@ -81,6 +81,39 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
             }
         }
         return gamessList;     // may be empty
+    }
+
+    @Override
+    public void deleteByID(int gameIDToDelete) throws DaoException
+    {
+        System.out.println("Attempting deletion of gameID: " + gameIDToDelete);
+
+        String url = "jdbc:mysql://localhost/";
+        String dbName = "steam_games";
+        String fullURL = url + dbName;
+        String userName = "root";
+        String password = "";
+
+        String sql = "DELETE FROM games WHERE gameID = ?";
+
+        try(Connection connection = DriverManager.getConnection(fullURL, userName, password);
+            PreparedStatement preparedStatement1 = connection.prepareStatement(sql)){
+
+            preparedStatement1.setInt(1,gameIDToDelete);
+
+            int rowAffected = preparedStatement1.executeUpdate(); // will DELETE a row
+
+            if(rowAffected > 0){
+                System.out.println("gameID: " + gameIDToDelete + " has been deleted.");
+            }
+            else{
+                System.out.println("gameID: " + gameIDToDelete + " does not exist.");
+            }
+
+        }catch(SQLException ex){
+            System.out.println("Failed to connect to database or execute delete operation.");
+            ex.printStackTrace();
+        }
     }
 
 }

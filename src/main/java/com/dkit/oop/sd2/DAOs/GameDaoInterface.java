@@ -9,6 +9,9 @@ public interface GameDaoInterface
     //Raphael
     public List<Game> displayAllGames() throws DaoException;
 
+    public void deleteByID(int gameIDToDelete) throws DaoException;
+
+
 
 }
 

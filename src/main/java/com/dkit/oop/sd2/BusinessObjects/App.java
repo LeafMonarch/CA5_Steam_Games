@@ -40,6 +40,8 @@ public class App
             System.out.println("=       0. Exit                                 =");
             System.out.println("=================================================\n");
 
+            int deleteGameID;
+
             int option = -1;
             while (option != 0) {
                 System.out.print("Please Enter your choice: ");
@@ -48,15 +50,26 @@ public class App
 
                 switch (option) {
                     case 1:
+                        //Raphael
                         IGameDao.displayAllGames();
                         break;
                     case 2:
                         // Implement find operation
                         break;
                     case 3:
-                        // Implement delete operation
+                        //Yee Chean
+                        do{
+                            System.out.println("Please Enter a gameID to Delete: ");
+                            while(!kb.hasNextInt()){
+                                System.out.println("That is not an ID, please Try Again...");
+                                kb.next();
+                            }
+                            deleteGameID = kb.nextInt();
+                            IGameDao.deleteByID(deleteGameID);
+                        }while(deleteGameID <= 0);
                         break;
                     case 4:
+                        //Darragh
                         // Implement insert operation
                         break;
                     case 0:
