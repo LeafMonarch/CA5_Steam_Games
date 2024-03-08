@@ -8,7 +8,7 @@ public interface GameDaoInterface
 {
     //Raphael
     public List<Game> displayAllGames() throws DaoException;
-
+    public List<Game> getGameByID(int gameIDToFind) throws DaoException;
     public void deleteByID(int gameIDToDelete) throws DaoException;
 
     public void insertGame(Game game) throws DaoException;

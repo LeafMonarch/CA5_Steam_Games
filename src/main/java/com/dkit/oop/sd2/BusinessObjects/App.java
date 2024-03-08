@@ -43,6 +43,7 @@ public class App
             System.out.println("=       0. Exit                                 =");
             System.out.println("=================================================\n");
 
+            int findGameID;
             int deleteGameID;
 
             int option = -1;
@@ -58,8 +59,17 @@ public class App
                         break;
                     case 2:
                         //Raphael & Yee Chean
-
+                        do{
+                            System.out.println("Please Enter a gameID to Find: ");
+                            while(!kb.hasNextInt()){
+                                System.out.println("That is not an ID, please Try Again...");
+                                kb.next();
+                            }
+                            findGameID = kb.nextInt();
+                            IGameDao.getGameByID(findGameID);
+                        }while(findGameID <= 0);
                         break;
+
                     case 3:
                         //Yee Chean
                         do{
