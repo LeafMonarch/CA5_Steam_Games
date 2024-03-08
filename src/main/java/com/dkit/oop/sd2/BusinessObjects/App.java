@@ -4,6 +4,9 @@ import com.dkit.oop.sd2.DAOs.MySqlGameDao;
 import com.dkit.oop.sd2.DAOs.GameDaoInterface;
 import com.dkit.oop.sd2.DTOs.Game;
 import com.dkit.oop.sd2.Exceptions.DaoException;
+
+import java.sql.SQLOutput;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
@@ -54,7 +57,8 @@ public class App
                         IGameDao.displayAllGames();
                         break;
                     case 2:
-                        // Implement find operation
+                        //Raphael & Yee Chean
+
                         break;
                     case 3:
                         //Yee Chean
@@ -70,7 +74,26 @@ public class App
                         break;
                     case 4:
                         //Darragh
-                        // Implement insert operation
+                        kb.nextLine();
+                        System.out.print("Please enter game name: ");
+                        String name = kb.nextLine();
+                        System.out.print("Please enter game genre: ");
+                        String genre = kb.nextLine();
+                        System.out.print("Please enter game release date (YYYY-MM-DD): ");
+                        LocalDate date = LocalDate.parse(kb.next());
+                        System.out.print("Please enter game rating: ");
+                        double rating = kb.nextDouble();
+                        System.out.print("Please enter game price: ");
+                        double price = kb.nextDouble();
+                        System.out.print("Please state if game is limited (true/false): ");
+                        boolean isLimited = kb.nextBoolean();
+                        System.out.print("Please enter stock level: ");
+                        int stockLevel = kb.nextInt();
+                        int gameID = 0;
+                        Game game = new Game(gameID,name,genre,date,rating,price,isLimited,stockLevel);
+                        IGameDao.insertGame(game);
+
+
                         break;
                     case 0:
                         System.out.println("Exiting Steam Games Library. Goodbye!");

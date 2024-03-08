@@ -11,7 +11,7 @@ public interface GameDaoInterface
 
     public void deleteByID(int gameIDToDelete) throws DaoException;
 
-
+    public void insertGame(Game game) throws DaoException;
 
 }
 

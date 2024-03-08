@@ -2,6 +2,8 @@ package com.dkit.oop.sd2.DTOs;
 
 import java.time.LocalDate;
 
+// Darragh & Raphael
+
 public class Game {
     private int gameID;
     private String name;

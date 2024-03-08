@@ -83,6 +83,7 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
         return gamessList;     // may be empty
     }
 
+    // Yee Chean
     @Override
     public void deleteByID(int gameIDToDelete) throws DaoException
     {
@@ -115,6 +116,54 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
             ex.printStackTrace();
         }
     }
+
+    //Darragh
+    @Override
+    public void insertGame(Game game) throws DaoException {
+        String url = "jdbc:mysql://localhost/";
+        String dbName = "steam_games";
+        String fullURL = url + dbName;
+        String userName = "root";
+        String password = "";
+
+        String sql = "INSERT INTO games (Name, Genre, ReleaseDate, Rating, Price, IsLimited, StockLevel) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection connection = DriverManager.getConnection(fullURL, userName, password);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql,
+                     Statement.RETURN_GENERATED_KEYS)) {
+            // Include Statement.RETURN_GENERATED_KEYS so we can set the game object to
+            // match the id of the table
+
+            preparedStatement.setString(1, game.getName());
+            preparedStatement.setString(2, game.getGenre());
+            preparedStatement.setDate(3, Date.valueOf(game.getReleaseDate()));
+            preparedStatement.setDouble(4, game.getRating());
+            preparedStatement.setDouble(5, game.getPrice());
+            preparedStatement.setBoolean(6, game.isLimited());
+            preparedStatement.setInt(7, game.getStockLevel());
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected == 1) {
+                ResultSet generatedKeys = preparedStatement.getGeneratedKeys(); // getGeneratedKeys returns the primary
+                // keys in the
+                // order they were generated e.g
+                // (0,1,2,3)
+                if (generatedKeys.next()) { // goes through all of the primary keys until theres none left
+                    int id = generatedKeys.getInt(1); // gets the last id from the results set which is the one that we
+                    // just added.
+                    game.setGameID(id); // set the games id to match the id that it has inside the database just to stay
+                    // consistent.
+                    System.out.println("Game has been successfully added to the database.");
+                }
+            } else {
+                throw new SQLException("Failed to insert game. No rows affected.");
+            }
+        } catch (SQLException ex) {
+            System.out.println("Failed to connect to database or execute insert operation.");
+            ex.printStackTrace();
+        }
+
+    }
+
 
 }
 
