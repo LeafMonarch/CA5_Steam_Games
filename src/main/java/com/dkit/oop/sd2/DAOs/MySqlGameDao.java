@@ -157,20 +157,22 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
     {
         System.out.println("Attempting deletion of gameID: " + gameIDToDelete);
 
-        String url = "jdbc:mysql://localhost/";
-        String dbName = "steam_games";
-        String fullURL = url + dbName;
-        String userName = "root";
-        String password = "";
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
-        String sql = "DELETE FROM games WHERE gameID = ?";
+        try
+        {
+            //Get connection object using the getConnection() method inherited
+            // from the super class (MySqlDao.java)
+            connection = this.getConnection();
 
-        try(Connection connection = DriverManager.getConnection(fullURL, userName, password);
-            PreparedStatement preparedStatement1 = connection.prepareStatement(sql)){
+            String query = "DELETE FROM games WHERE gameID = ?";
+            preparedStatement = connection.prepareStatement(query);
 
-            preparedStatement1.setInt(1,gameIDToDelete);
+            preparedStatement.setInt(1,gameIDToDelete);
 
-            int rowAffected = preparedStatement1.executeUpdate(); // will DELETE a row
+            int rowAffected = preparedStatement.executeUpdate(); // will DELETE a row
 
             if(rowAffected > 0){
                 System.out.println("gameID: " + gameIDToDelete + " has been deleted.");
@@ -179,9 +181,25 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
                 System.out.println("gameID: " + gameIDToDelete + " does not exist.");
             }
 
-        }catch(SQLException ex){
-            System.out.println("Failed to connect to database or execute delete operation.");
-            ex.printStackTrace();
+        } catch (SQLException e)
+        {
+            throw new DaoException("Error accessing database: " + e.getMessage());
+        } finally
+        {
+            try
+            {
+                if (resultSet != null){
+                    resultSet.close();
+                }
+                if (preparedStatement != null){
+                    preparedStatement.close();
+                }
+                if (connection != null){
+                    freeConnection(connection);
+                }
+            } catch (SQLException e){
+                throw new DaoException("Error closing resources: " + e.getMessage());
+            }
         }
     }
 
