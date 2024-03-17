@@ -5,6 +5,7 @@ import com.dkit.oop.sd2.Exceptions.DaoException;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class MySqlGameDao extends MySqlDao implements GameDaoInterface
@@ -16,32 +17,22 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
      */
     //Raphael
     @Override
-    public List<Game> displayAllGames() throws DaoException
-    {
+    public List<Game> displayAllGames() throws DaoException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        List<Game> gamessList = new ArrayList<>();
+        List<Game> gamesList = new ArrayList<>();
 
-        try
-        {
-            //Get connection object using the getConnection() method inherited
-            // from the super class (MySqlDao.java)
+        try {
             connection = this.getConnection();
 
             String query = "SELECT * FROM games";
             preparedStatement = connection.prepareStatement(query);
 
-            //Using a PreparedStatement to execute SQL...
             resultSet = preparedStatement.executeQuery();
-            // Print table headers
-            System.out.println("\n=============================================================================================================================");
-            System.out.printf("%-2s %-8s %-30s %-20s %-15s %-10s %-10s %-10s %-10s %-2s%n", "=","GameID", "Name", "Genre", "ReleaseDate", "Rating", "Price", "IsLimited", "StockLevel", "=");
-            System.out.println("=============================================================================================================================");
-            // Print table data
-            while (resultSet.next())
-            {
-                int gameId = resultSet.getInt("gameID");
+
+            while (resultSet.next()) {
+                int gameId = resultSet.getInt("ID");
                 String name = resultSet.getString("Name");
                 String genre = resultSet.getString("Genre");
                 Date releaseDate = resultSet.getDate("ReleaseDate");
@@ -49,72 +40,57 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
                 double price = resultSet.getDouble("Price");
                 boolean isLimited = resultSet.getBoolean("IsLimited");
                 int stockLevel = resultSet.getInt("StockLevel");
-                Game g = new Game(gameId, name, genre, releaseDate.toLocalDate(), rating,price,isLimited,stockLevel);
-                gamessList.add(g);
-                System.out.printf("%-2s %-8d %-30s %-20s %-15s %-10.1f %-10.2f %-10s %-9d  %-1s%n","=", gameId, name, genre, releaseDate.toLocalDate(), rating, price, isLimited, stockLevel, "=");
-                System.out.println("-----------------------------------------------------------------------------------------------------------------------------");
+                Game g = new Game(gameId, name, genre, releaseDate.toLocalDate(), rating, price, isLimited, stockLevel);
+                gamesList.add(g);
             }
-            System.out.println("=============================================================================================================================\n");
 
-        } catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new DaoException("displayAllGames() " + e.getMessage());
-        } finally
-        {
-            try
-            {
-                if (resultSet != null)
-                {
+        } finally {
+            try {
+                if (resultSet != null) {
                     resultSet.close();
                 }
-                if (preparedStatement != null)
-                {
+                if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                if (connection != null)
-                {
+                if (connection != null) {
                     freeConnection(connection);
                 }
-            } catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 throw new DaoException("findAllUsers() " + e.getMessage());
             }
         }
-        return gamessList;     // may be empty
+        return gamesList;
     }
 
-    public List<Game> getGameByID(int gameIDToFind) throws DaoException{
+    // Yee Chean
+    public List<Game> getGameByID(int gameIDToFind) throws DaoException {
         System.out.println("Attempting finding of gameID: " + gameIDToFind);
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        List<Game> gamessList = new ArrayList<>();
+        List<Game> gamesList = new ArrayList<>();
 
         if (gameIDToFind <= 0) {
             throw new IllegalArgumentException("Invalid game ID");
         }
 
-        try
-        {
-            //Get connection object using the getConnection() method inherited
+        try {
+            // Get connection object using the getConnection() method inherited
             // from the super class (MySqlDao.java)
             connection = this.getConnection();
 
-            String query = "SELECT * FROM games WHERE gameId = ?";
+            String query = "SELECT * FROM games WHERE ID = ?";
             preparedStatement = connection.prepareStatement(query);
 
-            preparedStatement.setInt(1,gameIDToFind);
+            preparedStatement.setInt(1, gameIDToFind);
 
-            //Using a PreparedStatement to execute SQL...
+            // Using a PreparedStatement to execute SQL...
             resultSet = preparedStatement.executeQuery();
-            // Print table headers
-            System.out.println("\n=============================================================================================================================");
-            System.out.printf("%-2s %-8s %-30s %-20s %-15s %-10s %-10s %-10s %-10s %-2s%n", "=","GameID", "Name", "Genre", "ReleaseDate", "Rating", "Price", "IsLimited", "StockLevel", "=");
-            System.out.println("=============================================================================================================================");
             // Print table data
-            while (resultSet.next())
-            {
-                int gameId = resultSet.getInt("gameID");
+            while (resultSet.next()) {
+                int gameId = resultSet.getInt("ID");
                 String name = resultSet.getString("Name");
                 String genre = resultSet.getString("Genre");
                 Date releaseDate = resultSet.getDate("ReleaseDate");
@@ -122,40 +98,34 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
                 double price = resultSet.getDouble("Price");
                 boolean isLimited = resultSet.getBoolean("IsLimited");
                 int stockLevel = resultSet.getInt("StockLevel");
-                Game g = new Game(gameId, name, genre, releaseDate.toLocalDate(), rating,price,isLimited,stockLevel);
-                gamessList.add(g);
-                System.out.printf("%-2s %-8d %-30s %-20s %-15s %-10.1f %-10.2f %-10s %-9d  %-1s%n","=", gameId, name, genre, releaseDate.toLocalDate(), rating, price, isLimited, stockLevel, "=");
-                System.out.println("-----------------------------------------------------------------------------------------------------------------------------");
+                Game game = new Game(gameId, name, genre, releaseDate.toLocalDate(), rating, price, isLimited, stockLevel);
+                gamesList.add(game);
             }
-            System.out.println("=============================================================================================================================\n");
 
-        } catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new DaoException("Error accessing database: " + e.getMessage());
-        } finally
-        {
-            try
-            {
-                if (resultSet != null){
+        } finally {
+            try {
+                if (resultSet != null) {
                     resultSet.close();
                 }
-                if (preparedStatement != null){
+                if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                if (connection != null){
+                if (connection != null) {
                     freeConnection(connection);
                 }
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 throw new DaoException("Error closing resources: " + e.getMessage());
             }
         }
-        return gamessList;     // may be empty
+        return gamesList; // may be empty
     }
     // Yee Chean
     @Override
-    public void deleteByID(int gameIDToDelete) throws DaoException
+    public void deleteByID(int idToDelete) throws DaoException
     {
-        System.out.println("Attempting deletion of gameID: " + gameIDToDelete);
+        System.out.println("Attempting deletion of gameID: " + idToDelete);
 
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -167,18 +137,18 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
             // from the super class (MySqlDao.java)
             connection = this.getConnection();
 
-            String query = "DELETE FROM games WHERE gameID = ?";
+            String query = "DELETE FROM games WHERE ID = ?";
             preparedStatement = connection.prepareStatement(query);
 
-            preparedStatement.setInt(1,gameIDToDelete);
+            preparedStatement.setInt(1,idToDelete);
 
             int rowAffected = preparedStatement.executeUpdate(); // will DELETE a row
 
             if(rowAffected > 0){
-                System.out.println("gameID: " + gameIDToDelete + " has been deleted.");
+                System.out.println("gameID: " + idToDelete + " has been deleted.");
             }
             else{
-                System.out.println("gameID: " + gameIDToDelete + " does not exist.");
+                System.out.println("gameID: " + idToDelete + " does not exist.");
             }
 
         } catch (SQLException e)
@@ -236,7 +206,7 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
                 if (generatedKeys.next()) { // goes through all of the primary keys until theres none left
                     int id = generatedKeys.getInt(1); // gets the last id from the results set which is the one that we
                     // just added.
-                    game.setGameID(id); // set the games id to match the id that it has inside the database just to stay
+                    game.setID(id); // set the games id to match the id that it has inside the database just to stay
                     // consistent.
                     System.out.println("Game has been successfully added to the database.");
                 }
@@ -251,5 +221,77 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
     }
 
 
+    // Yee Chean
+    @Override
+    public void updateExistingGame(int idToUpdate, Game game) throws DaoException
+    {
+        System.out.println("Attempting update of gameID: " + idToUpdate);
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        try
+        {
+            //Get connection object using the getConnection() method inherited
+            // from the super class (MySqlDao.java)
+            connection = this.getConnection();
+
+            String query = "UPDATE games SET Name = ?, Genre = ?, ReleaseDate = ?, Rating = ?, Price = ?, IsLimited = ?, StockLevel = ?  WHERE ID = ?";
+            preparedStatement = connection.prepareStatement(query);
+
+            preparedStatement.setString(1, game.getName());
+            preparedStatement.setString(2, game.getGenre());
+            preparedStatement.setDate(3, Date.valueOf(game.getReleaseDate()));
+            preparedStatement.setDouble(4, game.getRating());
+            preparedStatement.setDouble(5, game.getPrice());
+            preparedStatement.setBoolean(6, game.isLimited());
+            preparedStatement.setInt(7, game.getStockLevel());
+            preparedStatement.setInt(8, idToUpdate);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+//            if (rowsAffected == 1) {
+//                ResultSet generatedKeys = preparedStatement.getGeneratedKeys(); // getGeneratedKeys returns the primary
+//                // keys in the
+//                // order they were generated e.g
+//                // (0,1,2,3)
+//                if (generatedKeys.next()) { // goes through all of the primary keys until theres none left
+//                    int id = generatedKeys.getInt(1); // gets the last id from the results set which is the one that we
+//                    // just added.
+//                    game.setID(id); // set the games id to match the id that it has inside the database just to stay
+//                    // consistent.
+//                    System.out.println("Game has been successfully updated on the database.");
+//                }
+//            } else {
+//                throw new SQLException("Failed to update game. No rows affected.");
+//            }
+
+        } catch (SQLException e)
+        {
+            throw new DaoException("Error accessing database: " + e.getMessage());
+        } finally
+        {
+            try
+            {
+                if (resultSet != null){
+                    resultSet.close();
+                }
+                if (preparedStatement != null){
+                    preparedStatement.close();
+                }
+                if (connection != null){
+                    freeConnection(connection);
+                }
+            } catch (SQLException e){
+                throw new DaoException("Error closing resources: " + e.getMessage());
+            }
+        }
+    }
+    @Override
+    public List<Game> findGamesUsingFilter(Comparator<Game> comparator) throws DaoException {
+        List<Game> gamesList = displayAllGames(); // Retrieve all games
+        gamesList.sort(comparator); // Sort the games list based on the provided comparator
+        return gamesList;
+    }
 }
 

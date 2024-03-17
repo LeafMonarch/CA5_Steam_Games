@@ -5,7 +5,7 @@ import java.time.LocalDate;
 // Darragh & Raphael
 
 public class Game {
-    private int gameID;
+    private int id;
     private String name;
     private String genre;
     private LocalDate releaseDate;
@@ -16,7 +16,7 @@ public class Game {
 
     // Default Constructor
     public Game() {
-        this.gameID = 0;
+        this.id = 0;
         this.name = "";
         this.genre = "";
         this.releaseDate = LocalDate.now();
@@ -26,8 +26,8 @@ public class Game {
         this.stockLevel = 0;
     }
 
-    public Game(int gameID, String name, String genre, LocalDate releaseDate, double rating, double price, boolean isLimited, int stockLevel) {
-        this.gameID = gameID;
+    public Game(int id, String name, String genre, LocalDate releaseDate, double rating, double price, boolean isLimited, int stockLevel) {
+        this.id = id;
         this.name = name;
         this.genre = genre;
         this.releaseDate = releaseDate;
@@ -38,8 +38,8 @@ public class Game {
     }
 
     // Getters
-    public int getGameID() {
-        return gameID;
+    public int getID() {
+        return id;
     }
 
     public String getName() {
@@ -71,8 +71,8 @@ public class Game {
     }
 
     // Setters
-    public void setGameID(int id) {
-        this.gameID = id;
+    public void setID(int id) {
+        this.id = id;
     }
 
     public void setName(String name) {
@@ -106,7 +106,7 @@ public class Game {
     @Override
     public String toString() {
         return "Game{" +
-                "id=" + gameID +
+                "id=" + id +
                 ", name='" + name + '\'' +
                 ", genre='" + genre + '\'' +
                 ", releaseDate=" + releaseDate +
