@@ -8,14 +8,17 @@ import java.util.List;
 
 public interface GameDaoInterface
 {
-    //Raphael
+    // Raphael Displaying tables
     public List<Game> displayAllGames() throws DaoException;
     public List<Game> getGameByID(int gameIDToFind) throws DaoException;
     public void deleteByID(int gameIDToDelete) throws DaoException;
+    // Darragh
     public void insertGame(Game game) throws DaoException;
-    public void updateExistingGame(int gameIDToUpdate, Game game) throws DaoException;
-    List<Game> findGamesUsingFilter(Comparator<Game> comparator) throws DaoException;
-    public String gamesListToJson(List<Game> list) throws DaoException;
-    public String gameToJson(Game game) throws DaoException;
-}
 
+    // Yee Chean
+    void updateExistingGame(int idToUpdate, Game game) throws DaoException;
+
+    // Raphael Feature 6
+    List<Game> findGamesUsingFilter(Comparator<Game> comparator) throws DaoException;
+
+}

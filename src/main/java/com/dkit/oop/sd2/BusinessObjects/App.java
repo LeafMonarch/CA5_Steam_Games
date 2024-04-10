@@ -49,7 +49,7 @@ public class App {
             System.out.println("=       4. Insert an entity                     =");
             System.out.println("=       5. Update an entity                     =");
             System.out.println("=       6. Get list of entities matching filter =");
-            System.out.println("=       7. ");
+            System.out.println("=       7. Convert List entities as JSON string =");
             System.out.println("=       8. Convert Entity as JSON String        =");
             System.out.println("=       0. Exit                                 =");
             System.out.println("=================================================\n");
