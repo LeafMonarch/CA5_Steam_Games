@@ -293,5 +293,14 @@ public class MySqlGameDao extends MySqlDao implements GameDaoInterface
         gamesList.sort(comparator); // Sort the games list based on the provided comparator
         return gamesList;
     }
-}
 
+    @Override
+    public String gamesListToJson(List<Game> list) throws DaoException {
+        return null;
+    }
+
+    @Override
+    public String gameToJson(Game game) throws DaoException {
+        return null;
+    }
+}

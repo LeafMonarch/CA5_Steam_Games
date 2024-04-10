@@ -1,5 +1,6 @@
 package com.dkit.oop.sd2.BusinessObjects;
 
+import com.dkit.oop.sd2.DAOs.JsonConverter;
 import com.dkit.oop.sd2.DAOs.MySqlGameDao;
 import com.dkit.oop.sd2.DAOs.GameDaoInterface;
 import com.dkit.oop.sd2.DTOs.Game;
@@ -20,17 +21,20 @@ import java.util.Scanner;
 //  Replaced old code following the new DAO Interface
 //  Find Key and Display this particular game.
 //  Get a list of matching entities by NameComparator
-//  To Do : JUNIT Method
+// Display a single entity in JSON format
 
 // Yee Chean
 // DeleteByID & DeleteByIDValidation
 // Made GitHub Repo
-// To Do: -
+// Display list of entities in JSON format
 
 // Darragh
+// Insert a new Game Object
+//  Made GitHub Repo
+// JUNIT Methods
+// Testing JUNIT Methods
 
-public class App
-{
+public class App {
     public static void main(String[] args) {
         Scanner kb = new Scanner(System.in);
         GameDaoInterface IGameDao = new MySqlGameDao();
@@ -45,18 +49,18 @@ public class App
             System.out.println("=       4. Insert an entity                     =");
             System.out.println("=       5. Update an entity                     =");
             System.out.println("=       6. Get list of entities matching filter =");
+            System.out.println("=       7. ");
+            System.out.println("=       8. Convert Entity as JSON String        =");
             System.out.println("=       0. Exit                                 =");
             System.out.println("=================================================\n");
 
             int findGameID;
             int deleteGameID;
-            int idToUpdate;
 
             int option = -1;
             while (option != 0) {
                 System.out.print("Please Enter your choice: ");
                 option = kb.nextInt();
-
 
                 switch (option) {
                     case 1:
@@ -79,15 +83,15 @@ public class App
 
                     case 3:
                         //Yee Chean
-                        do{
+                        do {
                             System.out.println("Please Enter a gameID to Delete: ");
-                            while(!kb.hasNextInt()){
+                            while (!kb.hasNextInt()) {
                                 System.out.println("That is not an ID, please Try Again...");
                                 kb.next();
                             }
                             deleteGameID = kb.nextInt();
                             IGameDao.deleteByID(deleteGameID);
-                        }while(deleteGameID <= 0);
+                        } while (deleteGameID <= 0);
                         break;
                     case 4:
                         //Darragh
@@ -107,39 +111,43 @@ public class App
                         System.out.print("Please enter stock level: ");
                         int stockLevel = kb.nextInt();
                         int gameID = 0;
-                        Game game = new Game(gameID,name,genre,date,rating,price,isLimited,stockLevel);
+                        Game game = new Game(gameID, name, genre, date, rating, price, isLimited, stockLevel);
                         IGameDao.insertGame(game);
-
-                    case 5:
-                        kb.nextLine();
-                        System.out.println("Please enter the gameID you wish to update: ");
-                        idToUpdate = kb.nextInt();
-
-                        kb.nextLine();
-                        System.out.print("Please enter game name: ");
-                        String nameU = kb.nextLine();
-                        System.out.print("Please enter game genre: ");
-                        String genreU = kb.nextLine();
-                        System.out.print("Please enter game release date (YYYY-MM-DD): ");
-                        LocalDate dateU = LocalDate.parse(kb.next());
-                        System.out.print("Please enter game rating: ");
-                        double ratingU = kb.nextDouble();
-                        System.out.print("Please enter game price: ");
-                        double priceU = kb.nextDouble();
-                        System.out.print("Please state if game is limited (true/false): ");
-                        boolean isLimitedU = kb.nextBoolean();
-                        System.out.print("Please enter stock level: ");
-                        int stockLevelU = kb.nextInt();
-                        int gameIDU = 0;
-
-                        Game gameU = new Game(gameIDU,nameU,genreU,dateU,ratingU,priceU,isLimitedU,stockLevelU);
-                        IGameDao.updateExistingGame(idToUpdate, gameU);
                         break;
-
                     case 6:
                         //Raphael
                         List<Game> filteredGames = IGameDao.findGamesUsingFilter(new GamesNameComparator());
                         printGamesTable(filteredGames);
+                        break;
+                    case 7:
+                        //Yee Chean
+                        try {
+                            List<Game> allGames = IGameDao.displayAllGames();
+                            String gamesJson = JsonConverter.gamesListToJson(allGames);
+                            System.out.println("Games List converted to JSON:");
+                            System.out.println(gamesJson);
+                        } catch (DaoException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 8:
+                        //Raphael
+                        try {
+                            System.out.println("Please enter the game ID to convert to JSON:");
+                            int gameIDToConvert = kb.nextInt();
+                            List<Game> gameList = IGameDao.getGameByID(gameIDToConvert);
+
+                            if (!gameList.isEmpty()) {
+                                Game gameToConvert = gameList.get(0); // Get the first game from the list
+                                String gameJSON = JsonConverter.gameToJson(gameToConvert);
+                                System.out.println("Game converted to JSON:");
+                                System.out.println(gameJSON);
+                            } else {
+                                System.out.println("The game with that ID is not found");
+                            }
+                        } catch (DaoException e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case 0:
                         System.out.println("Exiting Steam Games Library. Goodbye!");
@@ -151,7 +159,9 @@ public class App
         } catch (DaoException e) {
             e.printStackTrace();
         }
+
     }
+
     // Raphael displaying table to menu, Originally in DAO.
     // Calling the displayAllGames method
     private static void displayAllGames(GameDaoInterface iGameDao) throws DaoException {

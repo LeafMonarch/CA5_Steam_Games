@@ -15,6 +15,7 @@ public interface GameDaoInterface
     public void insertGame(Game game) throws DaoException;
     public void updateExistingGame(int gameIDToUpdate, Game game) throws DaoException;
     List<Game> findGamesUsingFilter(Comparator<Game> comparator) throws DaoException;
-
+    public String gamesListToJson(List<Game> list) throws DaoException;
+    public String gameToJson(Game game) throws DaoException;
 }
 
