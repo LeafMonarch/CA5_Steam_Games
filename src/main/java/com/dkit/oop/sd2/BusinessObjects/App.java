@@ -12,6 +12,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 // LOGS
 
 //  Raphael:
@@ -35,6 +38,7 @@ import java.util.Scanner;
 // Testing JUNIT Methods
 
 public class App {
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     public static void main(String[] args) {
         Scanner kb = new Scanner(System.in);
         GameDaoInterface IGameDao = new MySqlGameDao();
@@ -50,7 +54,7 @@ public class App {
             System.out.println("=       5. Update an entity                     =");
             System.out.println("=       6. Get list of entities matching filter =");
             System.out.println("=       7. Convert List entities as JSON string =");
-            System.out.println("=       8. Convert Entity as JSON String        =");
+            System.out.println("=       8. Convert entity as JSON String        =");
             System.out.println("=       0. Exit                                 =");
             System.out.println("=================================================\n");
 
@@ -125,7 +129,7 @@ public class App {
                             List<Game> allGames = IGameDao.displayAllGames();
                             String gamesJson = JsonConverter.gamesListToJson(allGames);
                             System.out.println("Games List converted to JSON:");
-                            System.out.println(gamesJson);
+                            printJson(gamesJson);
                         } catch (DaoException e) {
                             e.printStackTrace();
                         }
@@ -141,7 +145,7 @@ public class App {
                                 Game gameToConvert = gameList.get(0); // Get the first game from the list
                                 String gameJSON = JsonConverter.gameToJson(gameToConvert);
                                 System.out.println("Game converted to JSON:");
-                                System.out.println(gameJSON);
+                                printJson(gameJSON);
                             } else {
                                 System.out.println("The game with that ID is not found");
                             }
@@ -184,5 +188,11 @@ public class App {
             System.out.printf("%-2s %-8d %-30s %-20s %-15s %-10.1f %-10.2f %-10s %-9d  %-1s%n", "=", game.getID(), game.getName(), game.getGenre(), game.getReleaseDate(), game.getRating(), game.getPrice(), game.isLimited(), game.getStockLevel(), "=");
         }
         System.out.println("=============================================================================================================================\n");
+    }
+    // Display GSON in format of JSON
+    private static void printJson(String jsonString) {
+        Object jsonObject = gson.fromJson(jsonString, Object.class);
+        String prettyJsonString = gson.toJson(jsonObject);
+        System.out.println(prettyJsonString);
     }
 }
