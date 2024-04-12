@@ -19,6 +19,7 @@ import com.dkit.oop.sd2.Exceptions.DaoException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import static com.dkit.oop.sd2.Thread.Server.ClientHandler.createGson;
 
@@ -149,6 +150,10 @@ public class Server {
                             e.printStackTrace();
                         }
                     }
+                    else if (message.startsWith("3")) {
+                        handleAddEntity(socketWriter, socketReader, gameDao);
+                    }
+
 
                 }
             } catch (IOException ex) {
@@ -203,6 +208,39 @@ public class Server {
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
             return gsonBuilder.create();
+        }
+
+
+    }
+
+    // Darragh
+    private static void handleAddEntity(PrintWriter socketWriter, BufferedReader socketReader, GameDaoInterface gameDao) {
+        try {
+            StringBuilder jsonBuilder = new StringBuilder();
+            String line;
+            while (!(line = socketReader.readLine()).isEmpty()) {
+                jsonBuilder.append(line);
+            }
+            String jsonData = jsonBuilder.toString();
+            System.out.println("Json data: " + jsonData);
+
+            Gson gson = createGson();
+            Game newGame = gson.fromJson(jsonData, Game.class);
+
+            gameDao.insertGame(newGame);
+
+            JsonObject responseJson = new JsonObject();
+            responseJson.addProperty("success", true);
+            String jsonResponse = responseJson.toString();
+            socketWriter.println(jsonResponse);
+        } catch (DaoException e) {
+            System.out.println("Server: DaoException: " + e);
+        } catch (Exception e) {
+            JsonObject responseJson = new JsonObject();
+            responseJson.addProperty("success", false);
+            responseJson.addProperty("error", "An error occurred: " + e.getMessage());
+            String jsonResponse = responseJson.toString();
+            socketWriter.println(jsonResponse);
         }
     }
 }

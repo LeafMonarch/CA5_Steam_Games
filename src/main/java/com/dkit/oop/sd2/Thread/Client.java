@@ -10,8 +10,12 @@ import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.dkit.oop.sd2.DAOs.JsonConverter;
+import com.dkit.oop.sd2.DTOs.Game;
+
 public class Client {
     public static void main(String[] args) {
         Client client = new Client();
@@ -125,6 +129,10 @@ public class Client {
                 String line = socketReader.nextLine();
                 System.out.println(line);
             }
+            else if (command.startsWith("3")) {
+                addEntity(socketWriter, socketReader, in);
+
+            }
             else
             {
                 String input = socketReader.nextLine();
@@ -138,6 +146,54 @@ public class Client {
         } catch (IOException e) {
             System.out.println("Client message: IOException: " + e);
         }
+    }
+
+    // Darragh
+    private void addEntity(PrintWriter socketWriter, Scanner socketReader, Scanner in)
+            throws IOException {
+        try {
+            System.out.print("Please enter game name: ");
+            String name = in.nextLine();
+            System.out.print("Please enter game genre: ");
+            String genre = in.nextLine();
+            System.out.print("Please enter game release date (YYYY-MM-DD): ");
+            LocalDate date = LocalDate.parse(in.next());
+            System.out.print("Please enter game rating: ");
+            double rating = in.nextDouble();
+            System.out.print("Please enter game price: ");
+            double price = in.nextDouble();
+            System.out.print("Please state if game is limited (true/false): ");
+            boolean isLimited = in.nextBoolean();
+            System.out.print("Please enter stock level: ");
+            int stockLevel = in.nextInt();
+            int gameID = 0;
+            Game newGame = new Game(gameID, name, genre, date, rating, price, isLimited, stockLevel);
+
+            String jsonRequest = JsonConverter.gameToJson(newGame);
+
+            socketWriter.println(jsonRequest); // Send JSON request to server
+            socketWriter.println(); // Send this to act as delimiter/break the while loop
+
+            String jsonResponse = socketReader.nextLine();
+            System.out.println("Server response: " + jsonResponse);
+
+            JsonObject responseJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
+            if (responseJson.has("success")) {
+                if (responseJson.get("success").getAsBoolean()) {
+                    // Confirm entity was added successfully and display the entity
+                    System.out.println("Entity added successfully:");
+                    System.out.println(responseJson.get("entity"));
+                } else {
+                    // Display an error if entity failed to be added
+                    System.out.println("Error: " + responseJson.get("error").getAsString());
+                }
+            } else {
+                System.out.println("Invalid response from server.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error occurred: " + e.getMessage());
+        }
+
     }
 }
 
