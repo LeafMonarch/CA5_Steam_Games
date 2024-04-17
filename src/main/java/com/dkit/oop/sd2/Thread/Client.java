@@ -1,10 +1,11 @@
 package com.dkit.oop.sd2.Thread;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.sql.Array;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -14,6 +15,9 @@ import com.dkit.oop.sd2.DAOs.JsonConverter;
 import com.dkit.oop.sd2.DTOs.Game;
 
 public class Client {
+    private static DataOutputStream dataOutputStream = null;
+    private static DataInputStream dataInputStream = null;
+
     public static void main(String[] args) {
         Client client = new Client();
         client.start();
@@ -23,13 +27,15 @@ public class Client {
         Scanner in = new Scanner(System.in);
         try {
             Socket socket = new Socket("localhost", 8888); // connect to server socket
+            dataInputStream = new DataInputStream(socket.getInputStream());
+            dataOutputStream = new DataOutputStream( socket.getOutputStream());
             System.out.println("Client: Port# of this client : " + socket.getLocalPort());
             System.out.println("Client: Port# of Server :" + socket.getPort());
 
             System.out.println("Client message: The Client is running and has connected to the server");
 
             boolean end = false;
-            while(!end){
+            while (!end) {
                 System.out.println("=================================================");
                 System.out.println("=====    Welcome to Steam Games Library     =====");
                 System.out.println("=================================================");
@@ -55,21 +61,18 @@ public class Client {
                 Scanner socketReader = new Scanner(socket.getInputStream()); // wait for, and retrieve the reply
 
                 // Raphael
-                if (command.startsWith("1"))
-                {
+                if (command.startsWith("1")) {
                     String firstString = socketReader.nextLine();
                     System.out.println(firstString);
                     // Displaying the table
-                    while (socketReader.hasNextLine())
-                    {
+                    while (socketReader.hasNextLine()) {
                         String line = socketReader.nextLine();
                         System.out.println(line);
                     }
                 }
 
                 // Yee Chean
-                else if (command.startsWith("2"))
-                {
+                else if (command.startsWith("2")) {
                     System.out.println("Please enter the game ID to find:");
                     int gameId = in.nextInt();
                     socketWriter.println(gameId); // Send the game ID to the server
@@ -81,8 +84,7 @@ public class Client {
                 }
 
                 // Yee Chean
-                else if (command.startsWith("3"))
-                {
+                else if (command.startsWith("3")) {
                     System.out.println("Please enter the game ID to delete:");
                     int gameId = in.nextInt();
                     socketWriter.println(gameId); // Send the game ID to the server
@@ -91,8 +93,7 @@ public class Client {
                 }
 
                 // Yee Chean & Raphael
-                else if (command.startsWith("4"))
-                {
+                else if (command.startsWith("4")) {
                     System.out.println("Please enter the game ID you want to update:");
                     int gameId = in.nextInt();
                     socketWriter.println(gameId); // Send the game ID to the server
@@ -125,21 +126,18 @@ public class Client {
                     // Send other updated details similarly
 
                     // Receive and display the response from the server
-                    while (socketReader.hasNextLine())
-                    {
+                    while (socketReader.hasNextLine()) {
                         String line = socketReader.nextLine();
                         System.out.println(line);
                     }
                 }
 
                 // Raphael
-                else if (command.startsWith("5"))
-                {
+                else if (command.startsWith("5")) {
                     String filteredGamesTable = socketReader.nextLine();
                     System.out.println(filteredGamesTable);
                     // Displaying the table
-                    while (socketReader.hasNextLine())
-                    {
+                    while (socketReader.hasNextLine()) {
                         String line = socketReader.nextLine();
                         System.out.println(line);
                     }
@@ -164,32 +162,40 @@ public class Client {
                 }
 
                 // Darragh Add/Insert an entity
-                else if (command.startsWith("8"))
-                {
+                else if (command.startsWith("8")) {
                     addEntity(socketWriter, socketReader, in);
                 }
+                else if (command.startsWith("9")) {
+//                    while (socketReader.hasNextLine()) { //Server send a list of images
+//                        String line = socketReader.nextLine();
+//                        System.out.println(line);
+//                    }
 
-                else if (command.startsWith("9"))
-                {
-
+                    String selectedImage = in.nextLine(); //user input desired image
+                    socketWriter.println(selectedImage);
+                    receiveFile("images/cat_received.jpg");
+                    dataInputStream.close();
+                    dataOutputStream.close();
+                    socket.close(); //may delete this
                 }
-
-                else if (command.startsWith("0")){
+                else if (command.startsWith("0")) {
                     end = true;
+                    System.out.println("Farewell.");
                 }
-                else
-                {
+                else {
                     String input = socketReader.nextLine();
                     System.out.println("Client message: Response from server: \"" + input + "\"");
                 }
                 socketWriter.close();
                 socketReader.close();
+                socket.close();
             }
-            socket.close();
 
-        }
-        catch (IOException e) {
+
+        } catch (IOException e) {
             System.out.println("Client message: IOException: " + e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -237,9 +243,48 @@ public class Client {
         } catch (Exception e) {
             System.out.println("Error occurred: " + e.getMessage());
         }
+    }
 
+
+    private static void receiveFile(String fileName)
+            throws Exception {
+        int bytes = 0;
+        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+
+
+        // DataInputStream allows us to read Java primitive types from stream e.g. readLong()
+        // read the size of the file in bytes (the file length)
+        long size = dataInputStream.readLong();
+        System.out.println("Server: file size in bytes = " + size);
+
+
+        // create a buffer to receive the incoming bytes from the socket
+        byte[] buffer = new byte[4 * 1024];         // 4 kilobyte buffer
+
+        System.out.println("Server:  Bytes remaining to be read from socket: ");
+
+        // next, read the raw bytes in chunks (buffer size) that make up the image file
+        while (size > 0 &&
+                (bytes = dataInputStream.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
+
+            // above, we read a number of bytes from stream to fill the buffer (if there are enough remaining)
+            // - the number of bytes we must read is the smallest (min) of: the buffer length and the remaining size of the file
+            //- (remember that the last chunk of data read will usually not fill the buffer)
+
+            // Here we write the buffer data into the local file
+            fileOutputStream.write(buffer, 0, bytes);
+
+            // reduce the 'size' by the number of bytes read in.
+            // 'size' represents the number of bytes remaining to be read from the socket stream.
+            // We repeat this until all the bytes are dealt with and the size is reduced to zero
+            size = size - bytes;
+            System.out.print(size + ", ");
+        }
+
+        System.out.println("File is Received");
+
+        System.out.println("Look in the images folder to see the transferred file: cat_received.jpg");
+        fileOutputStream.close();
     }
 }
-
-
 //  LocalTime time = LocalTime.parse(timeString); // Parse timeString -> convert to LocalTime object if required

@@ -20,4 +20,7 @@ JsonConverter {
     public static String gameToJson(Game game) {
         return gsonParser.toJson(game);
     }
+    public static String imagesListToJson(List<String> list) {
+        return gsonParser.toJson(list);
+    }
 }

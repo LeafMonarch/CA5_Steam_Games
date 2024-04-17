@@ -1,17 +1,15 @@
 package com.dkit.oop.sd2.Thread;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.dkit.oop.sd2.DAOs.GameDaoInterface;
+import com.dkit.oop.sd2.DAOs.JsonConverter;
 import com.dkit.oop.sd2.DAOs.LocalDateAdapter;
 import com.dkit.oop.sd2.DAOs.MySqlGameDao;
 import com.dkit.oop.sd2.DTOs.Game;
@@ -42,6 +40,7 @@ import static com.dkit.oop.sd2.Thread.Server.ClientHandler.createGson;
 
 public class Server {
     private static final Gson gson = createGson();;
+
     public static void main(String[] args) {
         Server server = new Server();
         server.start();
@@ -75,6 +74,9 @@ public class Server {
         private Socket socket;
         private int clientNumber;
 
+        private DataInputStream dataInputStream;
+        private static DataOutputStream dataOutputStream;
+
         public ClientHandler(Socket clientSocket, int clientNumber) {
             try {
                 this.socket = clientSocket;
@@ -83,6 +85,9 @@ public class Server {
                 OutputStream os = socket.getOutputStream();
                 this.socketWriter = new PrintWriter(os, true); // auto flush
                 this.clientNumber = clientNumber;
+                // Initialize DataInputStream and DataOutputStream
+                this.dataInputStream = new DataInputStream(socket.getInputStream());
+                this.dataOutputStream = new DataOutputStream(socket.getOutputStream());
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -177,7 +182,26 @@ public class Server {
                     }
 
                     else if(message.startsWith("9")){
+                        List<String> imagesList = new ArrayList<String>();
+                        imagesList.add("images/catmeme2.jpeg");
+                        imagesList.add("images/catmeme3.jpeg");
+                        imagesList.add("images/olli-the-polite-cat.jpg");
+//                        for(int i = 1; i <= imagesList.size(); i++){
+//                            socketWriter.println(i + ". " + imagesList.get(i-1));
+//                        }
+                        String imageListJson = JsonConverter.imagesListToJson(imagesList);
 
+                        //sent to client
+//                        socketWriter.println(imageListJson);
+                        //socketWriter.println("Please select an image from the list to be sent to you.");
+
+                        //received from client
+                        int selectedImage = Integer.parseInt(socketReader.readLine());
+                        socketWriter.println("image"+selectedImage);
+                        String imageToClient = imagesList.get(selectedImage-1);
+                        sendFile(imageToClient);
+                        dataInputStream.close();
+                        dataInputStream.close();
                     }
 
                 }
@@ -186,8 +210,9 @@ public class Server {
             }
             catch (DaoException e) {
                 System.out.println("Server: DaoException: " + e);
-            }
-            finally {
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
                 try {
                     socket.close();
                 } catch (IOException ex) {
@@ -266,6 +291,29 @@ public class Server {
                 String jsonResponse = responseJson.toString();
                 socketWriter.println(jsonResponse);
             }
+        }
+
+        private static void sendFile(String path) throws Exception
+        {
+            int bytes = 0;
+            // Open the File at the specified location (path)
+            File file = new File(path);
+            FileInputStream fileInputStream = new FileInputStream(file);
+
+            // send the length (in bytes) of the file to the server
+            dataOutputStream.writeLong(file.length());
+
+            // Here we break file into chunks
+            byte[] buffer = new byte[4 * 1024]; // 4 kilobyte buffer
+
+            // read bytes from file into the buffer until buffer is full or we reached end of file
+            while ((bytes = fileInputStream.read(buffer))!= -1) {
+                // Send the buffer contents to Server Socket, along with the count of the number of bytes
+                dataOutputStream.write(buffer, 0, bytes);
+                dataOutputStream.flush();   // force the data into the stream
+            }
+            // close the file
+            fileInputStream.close();
         }
     }
 }
