@@ -8,11 +8,8 @@ import java.time.LocalDate;
 import java.util.Scanner;
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
+
 import com.dkit.oop.sd2.DAOs.JsonConverter;
 import com.dkit.oop.sd2.DTOs.Game;
 
@@ -31,124 +28,171 @@ public class Client {
 
             System.out.println("Client message: The Client is running and has connected to the server");
 
-            System.out.println("=================================================");
-            System.out.println("=====    Welcome to Steam Games Library     =====");
-            System.out.println("=================================================");
-            System.out.println("=       1. Display all Entities”                =");
-            System.out.println("=       2. “Display Entity by Id                =");
-            System.out.println("=       3. Add an Entity                        =");
-            System.out.println("=================================================\n");
-            String command = in.nextLine();
+            boolean end = false;
+            while(!end){
+                System.out.println("=================================================");
+                System.out.println("=====    Welcome to Steam Games Library     =====");
+                System.out.println("=================================================");
+                System.out.println("=       1. Display all steam games              =");
+                System.out.println("=       2. Find an entity by key                =");
+                System.out.println("=       3. Delete an entity by key              =");
+                System.out.println("=       4. Update an Entity                     =");
+                System.out.println("=       5. Get list of entities matching filter =");
+                System.out.println("=       6. Display List entities as JSON string =");
+                System.out.println("=       7. Display entity as JSON String        =");
+                System.out.println("=       8. Add an Entity                        =");
+                System.out.println("=       9. Get Images List                      =");
+                System.out.println("=       0. Exit                                 =");
+                System.out.println("=================================================\n");
 
-            OutputStream os = socket.getOutputStream();
-            PrintWriter socketWriter = new PrintWriter(os, true); // true => auto flush buffers
+                String command = in.nextLine();
 
-            socketWriter.println(command);
+                OutputStream os = socket.getOutputStream();
+                PrintWriter socketWriter = new PrintWriter(os, true); // true => auto flush buffers
 
-            Scanner socketReader = new Scanner(socket.getInputStream()); // wait for, and retrieve the reply
+                socketWriter.println(command);
+
+                Scanner socketReader = new Scanner(socket.getInputStream()); // wait for, and retrieve the reply
+
+                // Raphael
+                if (command.startsWith("1"))
+                {
+                    String firstString = socketReader.nextLine();
+                    System.out.println(firstString);
+                    // Displaying the table
+                    while (socketReader.hasNextLine())
+                    {
+                        String line = socketReader.nextLine();
+                        System.out.println(line);
+                    }
+                }
+
+                // Yee Chean
+                else if (command.startsWith("2"))
+                {
+                    System.out.println("Please enter the game ID to find:");
+                    int gameId = in.nextInt();
+                    socketWriter.println(gameId); // Send the game ID to the server
+                    // Receive and display the game details from the server
+                    while (socketReader.hasNextLine()) {
+                        String line = socketReader.nextLine();
+                        System.out.println(line);
+                    }
+                }
+
+                // Yee Chean
+                else if (command.startsWith("3"))
+                {
+                    System.out.println("Please enter the game ID to delete:");
+                    int gameId = in.nextInt();
+                    socketWriter.println(gameId); // Send the game ID to the server
+                    // Receive and display successful deletion from the server
+
+                }
+
+                // Yee Chean & Raphael
+                else if (command.startsWith("4"))
+                {
+                    System.out.println("Please enter the game ID you want to update:");
+                    int gameId = in.nextInt();
+                    socketWriter.println(gameId); // Send the game ID to the server
+
+                    // Prompt the user for updated details
+                    System.out.print("Enter the updated name: ");
+                    String name = in.nextLine();
+                    System.out.print("Enter the updated genre: ");
+                    String genre = in.nextLine();
+                    System.out.print("Enter the updated release date (YYYY-MM-DD):");
+                    LocalDate release = LocalDate.parse(in.next());
+                    System.out.print("Enter the updated rating: ");
+                    double rating = in.nextDouble();
+                    System.out.print("Enter the updated price: ");
+                    double price = in.nextDouble();
+                    System.out.print("Enter the updated limited (true/false): ");
+                    boolean limited = in.nextBoolean();
+                    System.out.print("Enter the updated stock level: ");
+                    String stock = in.nextLine();
 
 
-            // OLD MENU FROM APP, COULD POSSIBLY BE USED IF WE NEED TO MOVE EVERYTHING FROM APP TO CLIENT
-//            if (command.startsWith("1"))
-//            {
-//                String firstString = socketReader.nextLine();
-//                System.out.println(firstString);
-//                // Displaying the table
-//                while (socketReader.hasNextLine())
-//                {
-//                    String line = socketReader.nextLine();
-//                    System.out.println(line);
-//                }
-//            }
-//
-//            else if (command.startsWith("2"))
-//            {
-//                System.out.println("Please enter the game ID to find:");
-//                int gameId = in.nextInt();
-//                socketWriter.println(gameId); // Send the game ID to the server
-//                // Receive and display the game details from the server
-//                while (socketReader.hasNextLine()) {
-//                    String line = socketReader.nextLine();
-//                    System.out.println(line);
-//                }
-//            }
-//            else if (command.startsWith("5"))
-//            {
-//                System.out.println("Please enter the game ID you want to update:");
-//                int gameId = in.nextInt();
-//                socketWriter.println(gameId); // Send the game ID to the server
-//
-//                // Prompt the user for updated details
-//                System.out.print("Enter the updated name: ");
-//                String name = in.nextLine();
-//                System.out.print("Enter the updated genre: ");
-//                String genre = in.nextLine();
-//                System.out.print("Enter the updated release date (YYYY-MM-DD):");
-//                LocalDate release = LocalDate.parse(in.next());
-//                System.out.print("Enter the updated rating: ");
-//                double rating = in.nextDouble();
-//                System.out.print("Enter the updated price: ");
-//                double price = in.nextDouble();
-//                System.out.print("Enter the updated limited (true/false): ");
-//                boolean limited = in.nextBoolean();
-//                System.out.print("Enter the updated stock level: ");
-//                String stock = in.nextLine();
-//
-//
-//                // Send the updated details to the server
-//                socketWriter.println(name);
-//                socketWriter.println(genre);
-//                socketWriter.println(release);
-//                socketWriter.println(rating);
-//                socketWriter.println(price);
-//                socketWriter.println(limited);
-//                socketWriter.println(stock);
-//                // Send other updated details similarly
-//
-//                // Receive and display the response from the server
-//                while (socketReader.hasNextLine())
-//                {
-//                    String line = socketReader.nextLine();
-//                    System.out.println(line);
-//                }
-//            }
+                    // Send the updated details to the server
+                    socketWriter.println(name);
+                    socketWriter.println(genre);
+                    socketWriter.println(release);
+                    socketWriter.println(rating);
+                    socketWriter.println(price);
+                    socketWriter.println(limited);
+                    socketWriter.println(stock);
+                    // Send other updated details similarly
 
-            // Raphael
-            if (command.startsWith("1")) {
-                while (socketReader.hasNextLine()) {
+                    // Receive and display the response from the server
+                    while (socketReader.hasNextLine())
+                    {
+                        String line = socketReader.nextLine();
+                        System.out.println(line);
+                    }
+                }
+
+                // Raphael
+                else if (command.startsWith("5"))
+                {
+                    String filteredGamesTable = socketReader.nextLine();
+                    System.out.println(filteredGamesTable);
+                    // Displaying the table
+                    while (socketReader.hasNextLine())
+                    {
+                        String line = socketReader.nextLine();
+                        System.out.println(line);
+                    }
+                }
+
+                // Raphael Display List entities as JSON string
+                else if (command.startsWith("6")) {
+                    while (socketReader.hasNextLine()) {
+                        String line = socketReader.nextLine();
+                        System.out.println(line);
+                    }
+                }
+
+                // Yee Chean Display Entity By ID as JSON string
+                else if (command.startsWith("7")) {
+                    System.out.println("Please enter a game ID");
+                    int gameID = in.nextInt();
+                    socketWriter.println(gameID);
+
                     String line = socketReader.nextLine();
                     System.out.println(line);
                 }
-            }
 
-            else if (command.startsWith("2")) {
-                System.out.println("Please enter a game ID");
-                int gameID = in.nextInt();
-                socketWriter.println(gameID);
+                // Darragh Add/Insert an entity
+                else if (command.startsWith("8"))
+                {
+                    addEntity(socketWriter, socketReader, in);
+                }
 
-                String line = socketReader.nextLine();
-                System.out.println(line);
-            }
-            else if (command.startsWith("3")) {
-                addEntity(socketWriter, socketReader, in);
+                else if (command.startsWith("9"))
+                {
 
-            }
-            else
-            {
-                String input = socketReader.nextLine();
-                System.out.println("Client message: Response from server: \"" + input + "\"");
-            }
+                }
 
-            socketWriter.close();
-            socketReader.close();
+                else if (command.startsWith("0")){
+                    end = true;
+                }
+                else
+                {
+                    String input = socketReader.nextLine();
+                    System.out.println("Client message: Response from server: \"" + input + "\"");
+                }
+                socketWriter.close();
+                socketReader.close();
+            }
             socket.close();
 
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             System.out.println("Client message: IOException: " + e);
         }
     }
 
-    // Darragh
     private void addEntity(PrintWriter socketWriter, Scanner socketReader, Scanner in)
             throws IOException {
         try {

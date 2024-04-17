@@ -7,7 +7,8 @@ import com.google.gson.GsonBuilder;
 import java.time.LocalDate;
 import java.util.List;
 
-public class JsonConverter {
+public class
+JsonConverter {
     private static final Gson gsonParser = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
             .create();

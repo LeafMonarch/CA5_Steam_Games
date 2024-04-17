@@ -168,7 +168,7 @@ public class App {
 
     // Raphael displaying table to menu, Originally in DAO.
     // Calling the displayAllGames method
-    private static void displayAllGames(GameDaoInterface iGameDao) throws DaoException {
+    public static void displayAllGames(GameDaoInterface iGameDao) throws DaoException {
         List<Game> gamesList = iGameDao.displayAllGames();
         printGamesTable(gamesList);
     }
