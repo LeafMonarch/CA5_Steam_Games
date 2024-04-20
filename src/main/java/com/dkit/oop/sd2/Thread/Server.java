@@ -28,26 +28,29 @@ import static com.dkit.oop.sd2.Thread.Server.ClientHandler.createGson;
 // Created 2 files Server and Client
 // Transferred
 // Implemented Feature 9
+// Implemented Feature 12
+// Implemented Feature 13 with Raph's help
 
 // Raphael
 // Implemented Feature 10
 // Introduced the LocalDateAdapter to call it as it is now in Server class "createGson"
 // Successfully moved other DAO components to server
-// To Do: Make the GSON display in JSON format
+// Made the GSON display in JSON format
+// Implemented Feature 13 with Yee Chean's help
 
 // Darragh
 // Implemented Feature 11
+// To Do: Menu Loop,
 
 public class Server {
-    private static final Gson gson = createGson();;
-
+    static final Gson gson = createGson();;
     public static void main(String[] args) {
         Server server = new Server();
         server.start();
     }
 
     public void start() {
-        try (ServerSocket ss = new ServerSocket(8888)) {
+        try (ServerSocket ss = new ServerSocket(3222)) {
             System.out.println("Server: Server started. Listening for connections on port 8888...");
             int clientNumber = 0;
 
@@ -99,23 +102,21 @@ public class Server {
             GameDaoInterface gameDao = new MySqlGameDao();
             try {
                 while ((message = socketReader.readLine()) != null) {
-                    System.out.println("Server: (ClientHandler): Read command from client " + clientNumber + ": " + message);
+                    System.out.println(
+                            "Server: (ClientHandler): Read command from client " + clientNumber + ": " + message);
 
                     // Raphael display all steam games
-                    if (message.startsWith("1"))
-                    {
+                    if (message.startsWith("1")) {
                         String gameTable = displayAllGames(gameDao);
                         socketWriter.println(gameTable); // Send game table to client
                     }
 
                     // Yee Chean Find an entity by key
-                    else if (message.startsWith("2"))
-                    {
+                    else if (message.startsWith("2")) {
                         socketWriter.println("Please Enter a gameID to Find: ");
                         int gameId = Integer.parseInt(socketReader.readLine()); // Read game ID from client
                         List<Game> gameList = gameDao.getGameByID(gameId);
-                        if (!gameList.isEmpty())
-                        {
+                        if (!gameList.isEmpty()) {
                             String gameTable = generateGameTableByID(gameList);
                             socketWriter.println(gameTable); // Send game table to client
                         } else {
@@ -124,22 +125,19 @@ public class Server {
                     }
 
                     // Yee Chean Delete Entity
-                    else if (message.startsWith("3"))
-                    {
+                    else if (message.startsWith("3")) {
                         socketWriter.println("Please Enter a gameID to Delete:");
                         int gameId = Integer.parseInt(socketReader.readLine()); // Read game ID from client
                         gameDao.deleteByID(gameId);
                     }
 
                     // Yee Chean & Raphael Update Entity
-                    else if (message.startsWith("4"))
-                    {
+                    else if (message.startsWith("4")) {
 
                     }
 
                     // Raphael Get list of entities matching filter
-                    else if (message.startsWith("5"))
-                    {
+                    else if (message.startsWith("5")) {
                         try {
                             List<Game> filteredGames = gameDao.findGamesUsingFilter(new GamesNameComparator());
                             String gamesTable = generateGamesTable(filteredGames);
@@ -166,7 +164,7 @@ public class Server {
                     else if (message.startsWith("7")) {
                         try {
                             int oneGameID = Integer.parseInt(socketReader.readLine());
-//                            int oneGameID = socketReader.read();
+                            // int oneGameID = socketReader.read();
                             List<Game> oneGame = gameDao.getGameByID(oneGameID);
                             String gamesJson = gson.toJson(oneGame);
                             socketWriter.println(gamesJson);
@@ -181,34 +179,39 @@ public class Server {
                         handleAddEntity(socketWriter, socketReader, gameDao);
                     }
 
-                    else if(message.startsWith("9")){
+                    // Yee Chean and Darragh
+                    else if (message.startsWith("9")) {
+
                         List<String> imagesList = new ArrayList<String>();
                         imagesList.add("images/catmeme2.jpeg");
                         imagesList.add("images/catmeme3.jpeg");
                         imagesList.add("images/olli-the-polite-cat.jpg");
-//                        for(int i = 1; i <= imagesList.size(); i++){
-//                            socketWriter.println(i + ". " + imagesList.get(i-1));
-//                        }
+                        // for(int i = 1; i <= imagesList.size(); i++){
+                        // socketWriter.println(i + ". " + imagesList.get(i-1));
+                        // }
                         String imageListJson = JsonConverter.imagesListToJson(imagesList);
 
-                        //sent to client
-//                        socketWriter.println(imageListJson);
-                        //socketWriter.println("Please select an image from the list to be sent to you.");
+                        // socketWriter.println("Please select an image from the list to be sent to
+                        // you");
 
-                        //received from client
+                        // sent to client
+                        socketWriter.println(imageListJson);
+
+                        // received from client
                         int selectedImage = Integer.parseInt(socketReader.readLine());
-                        socketWriter.println("image"+selectedImage);
-                        String imageToClient = imagesList.get(selectedImage-1);
+                        System.out.println("SelectedImage : " + selectedImage);
+                        socketWriter.println("image" + selectedImage);
+                        System.out.println("Image to Client : " + imagesList.get(selectedImage - 1));
+                        String imageToClient = imagesList.get(selectedImage - 1);
                         sendFile(imageToClient);
                         dataInputStream.close();
-                        dataInputStream.close();
+                        dataOutputStream.close();
                     }
 
                 }
             } catch (IOException ex) {
                 System.out.println("Server: IOException: " + ex);
-            }
-            catch (DaoException e) {
+            } catch (DaoException e) {
                 System.out.println("Server: DaoException: " + e);
             } catch (Exception e) {
                 throw new RuntimeException(e);

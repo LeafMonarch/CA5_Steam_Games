@@ -1,10 +1,16 @@
 package com.dkit.oop.sd2.Thread;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.time.LocalDate;
 import java.io.*;
 import java.net.Socket;
 import java.sql.Array;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -14,10 +20,14 @@ import com.google.gson.*;
 import com.dkit.oop.sd2.DAOs.JsonConverter;
 import com.dkit.oop.sd2.DTOs.Game;
 
+import static com.dkit.oop.sd2.Thread.Server.gson;
+
 public class Client {
     private static DataOutputStream dataOutputStream = null;
     private static DataInputStream dataInputStream = null;
 
+
+    private static final Gson gson = new Gson();
     public static void main(String[] args) {
         Client client = new Client();
         client.start();
@@ -26,9 +36,9 @@ public class Client {
     public void start() {
         Scanner in = new Scanner(System.in);
         try {
-            Socket socket = new Socket("localhost", 8888); // connect to server socket
+            Socket socket = new Socket("localhost", 3222); // connect to server socket
             dataInputStream = new DataInputStream(socket.getInputStream());
-            dataOutputStream = new DataOutputStream( socket.getOutputStream());
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
             System.out.println("Client: Port# of this client : " + socket.getLocalPort());
             System.out.println("Client: Port# of Server :" + socket.getPort());
 
@@ -89,7 +99,6 @@ public class Client {
                     int gameId = in.nextInt();
                     socketWriter.println(gameId); // Send the game ID to the server
                     // Receive and display successful deletion from the server
-
                 }
 
                 // Yee Chean & Raphael
@@ -113,7 +122,6 @@ public class Client {
                     boolean limited = in.nextBoolean();
                     System.out.print("Enter the updated stock level: ");
                     String stock = in.nextLine();
-
 
                     // Send the updated details to the server
                     socketWriter.println(name);
@@ -147,7 +155,7 @@ public class Client {
                 else if (command.startsWith("6")) {
                     while (socketReader.hasNextLine()) {
                         String line = socketReader.nextLine();
-                        System.out.println(line);
+                        printJson(line);
                     }
                 }
 
@@ -157,40 +165,61 @@ public class Client {
                     int gameID = in.nextInt();
                     socketWriter.println(gameID);
 
-                    String line = socketReader.nextLine();
-                    System.out.println(line);
+                    String json = socketReader.nextLine();
+                    printJson(json);
                 }
 
                 // Darragh Add/Insert an entity
                 else if (command.startsWith("8")) {
                     addEntity(socketWriter, socketReader, in);
-                }
-                else if (command.startsWith("9")) {
-//                    while (socketReader.hasNextLine()) { //Server send a list of images
-//                        String line = socketReader.nextLine();
-//                        System.out.println(line);
-//                    }
+                } else if (command.startsWith("9")) {
+                    String messageFromServer = socketReader.nextLine();
+                    String[] pathsArray = gson.fromJson(messageFromServer, String[].class);
+                    List<String> pathsList = Arrays.asList(pathsArray);
 
-                    String selectedImage = in.nextLine(); //user input desired image
-                    socketWriter.println(selectedImage);
-                    receiveFile("images/cat_received.jpg");
+                    System.out.println("============================");
+                    System.out.println(" Choose an Image to Receive");
+                    System.out.println("============================");
+                    for (int i = 0; i < pathsList.size(); i++) {
+                        System.out.println((i + 1) + ". " + pathsList.get(i));
+                    }
+                    System.out.println("0. Cancel");
+                    System.out.println("============================");
+                    System.out.println("Enter the number of the image you want to receive:");
+
+                    int selectedImage = in.nextInt();
+                    boolean isValidNum = false;
+
+                    while (isValidNum == false) {
+                        if (selectedImage == 0) {
+                            System.out.println("Cancelling...");
+                            isValidNum = true;
+                            break;
+                        } else if (selectedImage > pathsList.size()) {
+                            System.out.println("Invalid Number please try again :");
+                            selectedImage = in.nextInt();
+                        } else {
+                            isValidNum = true;
+                            socketWriter.println(selectedImage);
+                            receiveFile("images/cat_received.jpg");
+                        }
+                    }
                     dataInputStream.close();
                     dataOutputStream.close();
-                    socket.close(); //may delete this
-                }
-                else if (command.startsWith("0")) {
+                    // socket.close(); // may delete this
+
+                } else if (command.startsWith("0")) {
                     end = true;
                     System.out.println("Farewell.");
-                }
-                else {
+                } else {
                     String input = socketReader.nextLine();
                     System.out.println("Client message: Response from server: \"" + input + "\"");
                 }
+
                 socketWriter.close();
                 socketReader.close();
                 socket.close();
             }
-
 
         } catch (IOException e) {
             System.out.println("Client message: IOException: " + e);
@@ -243,8 +272,14 @@ public class Client {
         } catch (Exception e) {
             System.out.println("Error occurred: " + e.getMessage());
         }
+
     }
 
+    private static void printJson(String jsonString) {
+        Object jsonObject = gson.fromJson(jsonString, Object.class);
+        String prettyJsonString = gson.toJson(jsonObject);
+        System.out.println(prettyJsonString);
+    }
 
     private static void receiveFile(String fileName)
             throws Exception {
@@ -286,5 +321,7 @@ public class Client {
         System.out.println("Look in the images folder to see the transferred file: cat_received.jpg");
         fileOutputStream.close();
     }
+
 }
+
 //  LocalTime time = LocalTime.parse(timeString); // Parse timeString -> convert to LocalTime object if required
