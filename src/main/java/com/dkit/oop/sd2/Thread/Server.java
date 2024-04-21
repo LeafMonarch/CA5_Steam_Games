@@ -133,7 +133,8 @@ public class Server {
 
                     // Yee Chean & Raphael Update Entity
                     else if (message.startsWith("4")) {
-
+                        int gameId = Integer.parseInt(socketReader.readLine()); // Read game ID from client
+                        handleUpdateEntity(socketWriter, socketReader, gameDao, gameId);
                     }
 
                     // Raphael Get list of entities matching filter
@@ -262,6 +263,37 @@ public class Server {
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
             return gsonBuilder.create();
+        }
+
+        //Yee Chean
+        private static void handleUpdateEntity(PrintWriter socketWriter, BufferedReader socketReader,GameDaoInterface gameDao, int gameID) {
+            try {
+                StringBuilder jsonBuilder = new StringBuilder();
+                String line;
+                while (!(line = socketReader.readLine()).isEmpty()) {
+                    jsonBuilder.append(line);
+                }
+                String jsonData = jsonBuilder.toString();
+                System.out.println("Json data: " + jsonData);
+
+                Gson gson = createGson();
+                Game newGame = gson.fromJson(jsonData, Game.class);
+
+                gameDao.updateExistingGame(gameID, newGame);
+
+                JsonObject responseJson = new JsonObject();
+                responseJson.addProperty("success", true);
+                String jsonResponse = responseJson.toString();
+                socketWriter.println(jsonResponse);
+            } catch (DaoException e) {
+                System.out.println("Server: DaoException: " + e);
+            } catch (Exception e) {
+                JsonObject responseJson = new JsonObject();
+                responseJson.addProperty("success", false);
+                responseJson.addProperty("error", "An error occurred: " + e.getMessage());
+                String jsonResponse = responseJson.toString();
+                socketWriter.println(jsonResponse);
+            }
         }
 
         // Darragh

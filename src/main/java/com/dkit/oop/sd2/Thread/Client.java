@@ -107,37 +107,40 @@ public class Client {
                     int gameId = in.nextInt();
                     socketWriter.println(gameId); // Send the game ID to the server
 
-                    // Prompt the user for updated details
-                    System.out.print("Enter the updated name: ");
-                    String name = in.nextLine();
-                    System.out.print("Enter the updated genre: ");
-                    String genre = in.nextLine();
-                    System.out.print("Enter the updated release date (YYYY-MM-DD):");
-                    LocalDate release = LocalDate.parse(in.next());
-                    System.out.print("Enter the updated rating: ");
-                    double rating = in.nextDouble();
-                    System.out.print("Enter the updated price: ");
-                    double price = in.nextDouble();
-                    System.out.print("Enter the updated limited (true/false): ");
-                    boolean limited = in.nextBoolean();
-                    System.out.print("Enter the updated stock level: ");
-                    String stock = in.nextLine();
-
-                    // Send the updated details to the server
-                    socketWriter.println(name);
-                    socketWriter.println(genre);
-                    socketWriter.println(release);
-                    socketWriter.println(rating);
-                    socketWriter.println(price);
-                    socketWriter.println(limited);
-                    socketWriter.println(stock);
-                    // Send other updated details similarly
-
-                    // Receive and display the response from the server
-                    while (socketReader.hasNextLine()) {
-                        String line = socketReader.nextLine();
-                        System.out.println(line);
-                    }
+                    updateEntity(socketWriter, socketReader, in);
+//                    // Prompt the user for updated details
+//                    in.nextLine();
+//                    System.out.print("Enter the updated name: ");
+//                    String name = in.nextLine();
+//                    System.out.print("Enter the updated genre: ");
+//                    String genre = in.nextLine();
+//                    System.out.print("Enter the updated release date (YYYY-MM-DD):");
+//                    LocalDate release = LocalDate.parse(in.next());
+//                    System.out.print("Enter the updated rating: ");
+//                    double rating = in.nextDouble();
+//                    System.out.print("Enter the updated price: ");
+//                    double price = in.nextDouble();
+//                    System.out.print("Enter the updated limited (true/false): ");
+//                    boolean limited = in.nextBoolean();
+//                    in.nextLine();
+//                    System.out.print("Enter the updated stock level: ");
+//                    String stock = in.nextLine();
+//
+//                    // Send the updated details to the server
+//                    socketWriter.println(name);
+//                    socketWriter.println(genre);
+//                    socketWriter.println(release);
+//                    socketWriter.println(rating);
+//                    socketWriter.println(price);
+//                    socketWriter.println(limited);
+//                    socketWriter.println(stock);
+//                    // Send other updated details similarly
+//
+//                    // Receive and display the response from the server
+//                    while (socketReader.hasNextLine()) {
+//                        String line = socketReader.nextLine();
+//                        System.out.println(line);
+//                    }
                 }
 
                 // Raphael
@@ -172,7 +175,10 @@ public class Client {
                 // Darragh Add/Insert an entity
                 else if (command.startsWith("8")) {
                     addEntity(socketWriter, socketReader, in);
-                } else if (command.startsWith("9")) {
+                }
+
+
+                else if (command.startsWith("9")) {
                     String messageFromServer = socketReader.nextLine();
                     String[] pathsArray = gson.fromJson(messageFromServer, String[].class);
                     List<String> pathsList = Arrays.asList(pathsArray);
@@ -226,6 +232,55 @@ public class Client {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void updateEntity(PrintWriter socketWriter, Scanner socketReader, Scanner in)
+            throws IOException {
+        try {
+            System.out.println("Please enter game ID to update:");
+            int gameID = in.nextInt();
+            in.nextLine();
+            System.out.print("Please enter game name: ");
+            String name = in.nextLine();
+            System.out.print("Please enter game genre: ");
+            String genre = in.nextLine();
+            System.out.print("Please enter game release date (YYYY-MM-DD): ");
+            LocalDate date = LocalDate.parse(in.next());
+            System.out.print("Please enter game rating: ");
+            double rating = in.nextDouble();
+            System.out.print("Please enter game price: ");
+            double price = in.nextDouble();
+            System.out.print("Please state if game is limited (true/false): ");
+            boolean isLimited = in.nextBoolean();
+            System.out.print("Please enter stock level: ");
+            int stockLevel = in.nextInt();
+            Game newGame = new Game(gameID, name, genre, date, rating, price, isLimited, stockLevel);
+
+            String jsonRequest = JsonConverter.gameToJson(newGame);
+
+            socketWriter.println(jsonRequest); // Send JSON request to server
+            socketWriter.println(); // Send this to act as delimiter/break the while loop
+
+            String jsonResponse = socketReader.nextLine();
+            System.out.println("Server response: " + jsonResponse);
+
+            JsonObject responseJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
+            if (responseJson.has("success")) {
+                if (responseJson.get("success").getAsBoolean()) {
+                    // Confirm entity was added successfully and display the entity
+                    System.out.println("Entity updated successfully:");
+                    System.out.println(responseJson.get("entity"));
+                } else {
+                    // Display an error if entity failed to be added
+                    System.out.println("Error: " + responseJson.get("error").getAsString());
+                }
+            } else {
+                System.out.println("Invalid response from server.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error occurred: " + e.getMessage());
+        }
+
     }
 
     private void addEntity(PrintWriter socketWriter, Scanner socketReader, Scanner in)

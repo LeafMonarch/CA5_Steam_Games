@@ -24,12 +24,14 @@ import com.google.gson.GsonBuilder;
 //  Replaced old code following the new DAO Interface
 //  Find Key and Display this particular game.
 //  Get a list of matching entities by NameComparator
-// Display a single entity in JSON format
+//  Display a single entity in JSON format
 
 // Yee Chean
 // DeleteByID & DeleteByIDValidation
 // Made GitHub Repo
 // Display list of entities in JSON format
+// Find Key and Display this particular game.
+//
 
 // Darragh
 // Insert a new Game Object
@@ -117,6 +119,30 @@ public class App {
                         int gameID = 0;
                         Game game = new Game(gameID, name, genre, date, rating, price, isLimited, stockLevel);
                         IGameDao.insertGame(game);
+                        break;
+
+                    case 5:
+                        //Yee Chean
+                        kb.nextLine();
+                        System.out.println("Please select the gameID that you wish to update: ");
+                        int gameIDu = kb.nextInt();
+                        kb.nextLine();
+                        System.out.print("Please enter game name: ");
+                        String nameu = kb.nextLine();
+                        System.out.print("Please enter game genre: ");
+                        String genreu = kb.nextLine();
+                        System.out.print("Please enter game release date (YYYY-MM-DD): ");
+                        LocalDate dateu = LocalDate.parse(kb.next());
+                        System.out.print("Please enter game rating: ");
+                        double ratingu = kb.nextDouble();
+                        System.out.print("Please enter game price: ");
+                        double priceu = kb.nextDouble();
+                        System.out.print("Please state if game is limited (true/false): ");
+                        boolean isLimitedu = kb.nextBoolean();
+                        System.out.print("Please enter stock level: ");
+                        int stockLevelu = kb.nextInt();
+                        Game gameu = new Game(gameIDu, nameu, genreu, dateu, ratingu, priceu, isLimitedu, stockLevelu);
+                        IGameDao.updateExistingGame(gameIDu, gameu);
                         break;
                     case 6:
                         //Raphael
